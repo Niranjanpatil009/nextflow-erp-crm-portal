@@ -1,0 +1,6 @@
+{
+  "name": "NexFlow ERP & CRM Portal",
+  "description": "Mini ERP + CRM Operations Portal for wholesale & distribution with Role-Based Access, CRM Follow-ups, Inventory Control, and Sales Challans.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
