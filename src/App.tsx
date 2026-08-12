@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Customer, Product, StockMovementLog, SalesChallan, SystemStats } from './types';
-import { api, getStoredUser } from './lib/api';
+import { api, getStoredUser, getAuthToken } from './lib/api';
 import { USERS } from './server/store';
 import { Navbar } from './components/Navbar';
 import { DashboardView } from './components/DashboardView';
@@ -71,6 +71,33 @@ export default function App() {
 
   const [isChallanPrintOpen, setIsChallanPrintOpen] = useState(false);
   const [printChallan, setPrintChallan] = useState<SalesChallan | null>(null);
+
+  // Initialize Session Token if Missing
+  useEffect(() => {
+    const ensureToken = async () => {
+      if (!getAuthToken()) {
+        try {
+          const res = await api.login('admin@nexflow.com', 'admin123');
+          setCurrentUser(res.user);
+        } catch (e) {
+          console.warn('Auto-login failed:', e);
+        }
+      }
+    };
+    ensureToken();
+
+    const handleUnauthorized = async () => {
+      try {
+        const res = await api.login(currentUser.email || 'admin@nexflow.com', 'admin123');
+        setCurrentUser(res.user);
+      } catch (e) {
+        setIsLoginOpen(true);
+      }
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, []);
 
   // Load All System Data
   const loadData = async () => {

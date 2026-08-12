@@ -38,11 +38,33 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   }
 
   const targetUrl = url.startsWith('/') ? `${API_BASE_URL}${url}` : url;
-  const response = await fetch(targetUrl, { ...options, headers });
-  const data = await response.json();
+  
+  let response: Response;
+  try {
+    response = await fetch(targetUrl, { ...options, headers });
+  } catch (err: any) {
+    throw new Error(`Network Error: Cannot connect to API endpoint (${targetUrl}). Please verify backend server is running and CORS is enabled.`);
+  }
+
+  const responseText = await response.text();
+  let data: any = {};
+  if (responseText && responseText.trim().length > 0) {
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      data = { error: responseText };
+    }
+  }
 
   if (!response.ok) {
-    throw new Error(data.error || 'An error occurred while processing your request');
+    if (response.status === 401) {
+      clearAuthSession();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      }
+    }
+    const errMsg = data.error || data.message || `HTTP ${response.status}: ${response.statusText || 'Request failed'}`;
+    throw new Error(errMsg);
   }
 
   return data;
@@ -172,7 +194,6 @@ export const api = {
   },
 
   getPostmanCollection: async () => {
-    const res = await fetch(`${API_BASE_URL}/api/docs/postman`);
-    return res.json();
+    return fetchWithAuth('/api/docs/postman');
   },
 };

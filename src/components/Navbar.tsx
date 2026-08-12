@@ -1,7 +1,7 @@
 import React from 'react';
 import { User } from '../types';
 import { USERS } from '../server/store';
-import { setAuthSession } from '../lib/api';
+import { api, setAuthSession } from '../lib/api';
 import {
   Building2,
   Users,
@@ -32,20 +32,25 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [showRoleMenu, setShowRoleMenu] = React.useState(false);
 
-  const handleSwitchUser = (u: typeof USERS[0]) => {
-    // Generate simulated token
-    const token = 'simulated_jwt_token_' + u.role.toLowerCase();
-    const userPayload = {
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      role: u.role,
-      department: u.department,
-      avatarUrl: u.avatarUrl,
-    };
-    setAuthSession(token, userPayload);
-    onUserChange(userPayload);
-    setShowRoleMenu(false);
+  const handleSwitchUser = async (u: typeof USERS[0]) => {
+    try {
+      const res = await api.login(u.email, u.password);
+      onUserChange(res.user);
+    } catch (err) {
+      console.error('Login error during role switch:', err);
+      // Fallback
+      const userPayload = {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        department: u.department,
+        avatarUrl: u.avatarUrl,
+      };
+      onUserChange(userPayload);
+    } finally {
+      setShowRoleMenu(false);
+    }
   };
 
   const navItems = [

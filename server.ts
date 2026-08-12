@@ -13,12 +13,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
-    message: 'NexFlow API is running'
-  });
-});
 
 // Auth Middleware
 export interface AuthenticatedRequest extends Request {
