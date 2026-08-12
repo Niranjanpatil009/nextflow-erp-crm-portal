@@ -24,7 +24,7 @@ export const clearAuthSession = () => {
   localStorage.removeItem(USER_KEY);
 };
 
-const API_BASE_URL = (((import.meta as any).env?.VITE_API_BASE_URL as string) || '').replace(/\/$/, '');
+const API_BASE_URL = (((import.meta as any).env?.VITE_API_URL as string) || '').replace(/\/$/, '');
 
 const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   const token = getAuthToken();
